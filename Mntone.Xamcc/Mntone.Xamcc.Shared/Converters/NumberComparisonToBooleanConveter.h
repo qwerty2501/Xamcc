@@ -39,6 +39,9 @@ namespace Mntone { namespace Xamcc { namespace Converters {
 	private:
 		void UpdateFunction();
 
+		template<typename T>
+		void InnerUpDateFunction();
+
 	private:
 		Converters::NumberType NumberType_;
 		Converters::ComparisonType ComparisonType_;

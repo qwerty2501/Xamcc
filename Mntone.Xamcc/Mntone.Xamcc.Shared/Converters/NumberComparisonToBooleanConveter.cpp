@@ -49,320 +49,162 @@ void NumberComparisonToBooleanConveter::ComparisonType::set( MXC::ComparisonType
 }
 
 
+template<typename T>
+T StringToNumber(Platform::String^ str);
+
+template<>
+static int16 StringToNumber<int16>(Platform::String^ str)
+{
+	return static_cast<int16>(_wtoi(str->Data()));
+}
+
+template<>
+static uint16 StringToNumber<uint16>(Platform::String^ str)
+{
+	return static_cast<uint16>(wcstoul(str->Data(), nullptr, 10));
+}
+
+template<>
+static uint32 StringToNumber<uint32>(Platform::String^ str)
+{
+	return static_cast<uint32>(wcstoul(str->Data(), nullptr, 10));
+}
+
+template<>
+static int64 StringToNumber<int64>(Platform::String^ str)
+{
+	return static_cast<int64>(_wtoi64(str->Data()));
+}
+
+template<>
+static uint64 StringToNumber<uint64>(Platform::String^ str)
+{
+	return static_cast<uint64>(wcstoull(str->Data(), nullptr, 10));
+}
+
+template<>
+static float32 StringToNumber<float32>(Platform::String^ str)
+{
+	return static_cast<float32>(_wtof(str->Data()));
+}
+
+template<>
+static float64 StringToNumber<float64>(Platform::String^ str)
+{
+	return _wtof(str->Data());
+}
+
+template<>
+static int32 StringToNumber<int32>(Platform::String^ str)
+{
+	return _wtoi(str->Data());
+}
+
+
+template<typename T>
+void NumberComparisonToBooleanConveter::InnerUpDateFunction()
+{
+
+
+	function<bool(T, T)> comparisonInnerFunc;
+	switch (ComparisonType_)
+	{
+	case MXC::ComparisonType::NotEqualTo:
+		comparisonInnerFunc = [](T value, T parameter) { return value != parameter; };
+		break;
+
+	case MXC::ComparisonType::LessThan:
+		comparisonInnerFunc = [](T value, T parameter) { return value < parameter; };
+		break;
+
+	case MXC::ComparisonType::LessThanOrEqualTo:
+		comparisonInnerFunc = [](T value, T parameter) { return value <= parameter; };
+		break;
+
+	case MXC::ComparisonType::GreaterThan:
+		comparisonInnerFunc = [](T value, T parameter) { return value > parameter; };
+		break;
+
+	case MXC::ComparisonType::GreaterThanOrEqualTo:
+		comparisonInnerFunc = [](T value, T parameter) { return value >= parameter; };
+		break;
+
+	case MXC::ComparisonType::EqualTo:
+	default:
+		comparisonInnerFunc = [](T value, T parameter) { return value == parameter; };
+		break;
+	}
+
+	comparisonFunction_ = [comparisonInnerFunc](Object^ value, String^ parameter)
+	{
+		auto numberValue = dynamic_cast<IBox<T>^>(value);
+		T numberParameter = parameter ? StringToNumber<T>(parameter) : 0;
+		return numberValue ? comparisonInnerFunc(numberValue->Value, numberParameter) : DependencyProperty::UnsetValue;
+	};
+}
+
+
 void NumberComparisonToBooleanConveter::UpdateFunction()
 {
 	switch( NumberType_ )
 	{
 	case MXC::NumberType::Int16:
 	{
-		function<bool( int16, int16 )> comparisonInnerFunc;
-		switch( ComparisonType_ )
-		{
-		case MXC::ComparisonType::NotEqualTo:
-			comparisonInnerFunc = []( int16 value, int16 parameter ) { return value != parameter; };
-			break;
-
-		case MXC::ComparisonType::LessThan:
-			comparisonInnerFunc = []( int16 value, int16 parameter ) { return value < parameter; };
-			break;
-
-		case MXC::ComparisonType::LessThanOrEqualTo:
-			comparisonInnerFunc = []( int16 value, int16 parameter ) { return value <= parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThan:
-			comparisonInnerFunc = []( int16 value, int16 parameter ) { return value > parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThanOrEqualTo:
-			comparisonInnerFunc = []( int16 value, int16 parameter ) { return value >= parameter; };
-			break;
-
-		case MXC::ComparisonType::EqualTo:
-		default:
-			comparisonInnerFunc = []( int16 value, int16 parameter ) { return value == parameter; };
-			break;
-		}
-		comparisonFunction_ = [comparisonInnerFunc]( Object^ value, String^ parameter )
-		{
-			auto numberValue = dynamic_cast<IBox<int16>^>( value );
-			int16 numberParameter = parameter ? static_cast<int16>( _wtoi( parameter->Data() ) ) : 0;
-			return numberValue ? comparisonInnerFunc( numberValue->Value, numberParameter ) : DependencyProperty::UnsetValue;
-		};
+		InnerUpDateFunction<int16>();
+		
 		break;
 	}
 
 	case MXC::NumberType::UInt16:
 	{
-		function<bool( uint16, uint16 )> comparisonInnerFunc;
-		switch( ComparisonType_ )
-		{
-		case MXC::ComparisonType::NotEqualTo:
-			comparisonInnerFunc = []( uint16 value, uint16 parameter ) { return value != parameter; };
-			break;
+		InnerUpDateFunction<uint16>();
 
-		case MXC::ComparisonType::LessThan:
-			comparisonInnerFunc = []( uint16 value, uint16 parameter ) { return value < parameter; };
-			break;
-
-		case MXC::ComparisonType::LessThanOrEqualTo:
-			comparisonInnerFunc = []( uint16 value, uint16 parameter ) { return value <= parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThan:
-			comparisonInnerFunc = []( uint16 value, uint16 parameter ) { return value > parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThanOrEqualTo:
-			comparisonInnerFunc = []( uint16 value, uint16 parameter ) { return value >= parameter; };
-			break;
-
-		case MXC::ComparisonType::EqualTo:
-		default:
-			comparisonInnerFunc = []( uint16 value, uint16 parameter ) { return value == parameter; };
-			break;
-		}
-		comparisonFunction_ = [comparisonInnerFunc]( Object^ value, String^ parameter )
-		{
-			auto numberValue = dynamic_cast<IBox<uint16>^>( value );
-			uint16 numberParameter = parameter ? static_cast<uint16>( wcstoul( parameter->Data(), nullptr, 10 ) ) : 0u;
-			return numberValue ? comparisonInnerFunc( numberValue->Value, numberParameter ) : DependencyProperty::UnsetValue;
-		};
 		break;
 	}
 
 	case MXC::NumberType::UInt32:
 	{
-		function<bool( uint32, uint32 )> comparisonInnerFunc;
-		switch( ComparisonType_ )
-		{
-		case MXC::ComparisonType::NotEqualTo:
-			comparisonInnerFunc = []( uint32 value, uint32 parameter ) { return value != parameter; };
-			break;
 
-		case MXC::ComparisonType::LessThan:
-			comparisonInnerFunc = []( uint32 value, uint32 parameter ) { return value < parameter; };
-			break;
+		InnerUpDateFunction<uint32>();
 
-		case MXC::ComparisonType::LessThanOrEqualTo:
-			comparisonInnerFunc = []( uint32 value, uint32 parameter ) { return value <= parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThan:
-			comparisonInnerFunc = []( uint32 value, uint32 parameter ) { return value > parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThanOrEqualTo:
-			comparisonInnerFunc = []( uint32 value, uint32 parameter ) { return value >= parameter; };
-			break;
-
-		case MXC::ComparisonType::EqualTo:
-		default:
-			comparisonInnerFunc = []( uint32 value, uint32 parameter ) { return value == parameter; };
-			break;
-		}
-		comparisonFunction_ = [comparisonInnerFunc]( Object^ value, String^ parameter )
-		{
-			auto numberValue = dynamic_cast<IBox<uint32>^>( value );
-			uint32 numberParameter = parameter ? wcstoul( parameter->Data(), nullptr, 10 ) : 0ul;
-			return numberValue ? comparisonInnerFunc( numberValue->Value, numberParameter ) : DependencyProperty::UnsetValue;
-		};
 		break;
 	}
 
 	case MXC::NumberType::Int64:
 	{
-		function<bool( int64, int64 )> comparisonInnerFunc;
-		switch( ComparisonType_ )
-		{
-		case MXC::ComparisonType::NotEqualTo:
-			comparisonInnerFunc = []( int64 value, int64 parameter ) { return value != parameter; };
-			break;
+		InnerUpDateFunction<int64>();
 
-		case MXC::ComparisonType::LessThan:
-			comparisonInnerFunc = []( int64 value, int64 parameter ) { return value < parameter; };
-			break;
-
-		case MXC::ComparisonType::LessThanOrEqualTo:
-			comparisonInnerFunc = []( int64 value, int64 parameter ) { return value <= parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThan:
-			comparisonInnerFunc = []( int64 value, int64 parameter ) { return value > parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThanOrEqualTo:
-			comparisonInnerFunc = []( int64 value, int64 parameter ) { return value >= parameter; };
-			break;
-
-		case MXC::ComparisonType::EqualTo:
-		default:
-			comparisonInnerFunc = []( int64 value, int64 parameter ) { return value == parameter; };
-			break;
-		}
-		comparisonFunction_ = [comparisonInnerFunc]( Object^ value, String^ parameter )
-		{
-			auto numberValue = dynamic_cast<IBox<int64>^>( value );
-			int64 numberParameter = parameter ? _wtoi64( parameter->Data() ) : 0ll;
-			return numberValue ? comparisonInnerFunc( numberValue->Value, numberParameter ) : DependencyProperty::UnsetValue;
-		};
+		
 		break;
 	}
 
 	case MXC::NumberType::UInt64:
 	{
-		function<bool( uint64, uint64 )> comparisonInnerFunc;
-		switch( ComparisonType_ )
-		{
-		case MXC::ComparisonType::NotEqualTo:
-			comparisonInnerFunc = []( uint64 value, uint64 parameter ) { return value != parameter; };
-			break;
 
-		case MXC::ComparisonType::LessThan:
-			comparisonInnerFunc = []( uint64 value, uint64 parameter ) { return value < parameter; };
-			break;
+		InnerUpDateFunction<uint64>();
 
-		case MXC::ComparisonType::LessThanOrEqualTo:
-			comparisonInnerFunc = []( uint64 value, uint64 parameter ) { return value <= parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThan:
-			comparisonInnerFunc = []( uint64 value, uint64 parameter ) { return value > parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThanOrEqualTo:
-			comparisonInnerFunc = []( uint64 value, uint64 parameter ) { return value >= parameter; };
-			break;
-
-		case MXC::ComparisonType::EqualTo:
-		default:
-			comparisonInnerFunc = []( uint64 value, uint64 parameter ) { return value == parameter; };
-			break;
-		}
-		comparisonFunction_ = [comparisonInnerFunc]( Object^ value, String^ parameter )
-		{
-			auto numberValue = dynamic_cast<IBox<uint64>^>( value );
-			uint64 numberParameter = parameter ? wcstoull( parameter->Data(), nullptr, 10 ) : 0ull;
-			return numberValue ? comparisonInnerFunc( numberValue->Value, numberParameter ) : DependencyProperty::UnsetValue;
-		};
 		break;
 	}
 
 	case MXC::NumberType::Single:
 	{
-		function<bool( float32, float32 )> comparisonInnerFunc;
-		switch( ComparisonType_ )
-		{
-		case MXC::ComparisonType::NotEqualTo:
-			comparisonInnerFunc = []( float32 value, float32 parameter ) { return value != parameter; };
-			break;
+		InnerUpDateFunction<float32>();
 
-		case MXC::ComparisonType::LessThan:
-			comparisonInnerFunc = []( float32 value, float32 parameter ) { return value < parameter; };
-			break;
-
-		case MXC::ComparisonType::LessThanOrEqualTo:
-			comparisonInnerFunc = []( float32 value, float32 parameter ) { return value <= parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThan:
-			comparisonInnerFunc = []( float32 value, float32 parameter ) { return value > parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThanOrEqualTo:
-			comparisonInnerFunc = []( float32 value, float32 parameter ) { return value >= parameter; };
-			break;
-
-		case MXC::ComparisonType::EqualTo:
-		default:
-			comparisonInnerFunc = []( float32 value, float32 parameter ) { return value == parameter; };
-			break;
-		}
-		comparisonFunction_ = [comparisonInnerFunc]( Object^ value, String^ parameter )
-		{
-			auto numberValue = dynamic_cast<IBox<float32>^>( value );
-			float32 numberParameter = parameter ? static_cast<float32>( _wtof( parameter->Data() ) ) : 0.f;
-			return numberValue ? comparisonInnerFunc( numberValue->Value, numberParameter ) : DependencyProperty::UnsetValue;
-		};
 		break;
 	}
 
 	case MXC::NumberType::Double:
 	{
-		function<bool( float64, float64 )> comparisonInnerFunc;
-		switch( ComparisonType_ )
-		{
-		case MXC::ComparisonType::NotEqualTo:
-			comparisonInnerFunc = []( float64 value, float64 parameter ) { return value != parameter; };
-			break;
+		InnerUpDateFunction<float64>();
 
-		case MXC::ComparisonType::LessThan:
-			comparisonInnerFunc = []( float64 value, float64 parameter ) { return value < parameter; };
-			break;
-
-		case MXC::ComparisonType::LessThanOrEqualTo:
-			comparisonInnerFunc = []( float64 value, float64 parameter ) { return value <= parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThan:
-			comparisonInnerFunc = []( float64 value, float64 parameter ) { return value > parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThanOrEqualTo:
-			comparisonInnerFunc = []( float64 value, float64 parameter ) { return value >= parameter; };
-			break;
-
-		case MXC::ComparisonType::EqualTo:
-		default:
-			comparisonInnerFunc = []( float64 value, float64 parameter ) { return value == parameter; };
-			break;
-		}
-		comparisonFunction_ = [comparisonInnerFunc]( Object^ value, String^ parameter )
-		{
-			auto numberValue = dynamic_cast<IBox<float64>^>( value );
-			float64 numberParameter = parameter ? _wtof( parameter->Data() ) : 0.0;
-			return numberValue ? comparisonInnerFunc( numberValue->Value, numberParameter ) : DependencyProperty::UnsetValue;
-		};
 		break;
 	}
 
 	case MXC::NumberType::Int32:
 	default:
 	{
-		function<bool( int32, int32 )> comparisonInnerFunc;
-		switch( ComparisonType_ )
-		{
-		case MXC::ComparisonType::NotEqualTo:
-			comparisonInnerFunc = []( int32 value, int32 parameter ) { return value != parameter; };
-			break;
+		InnerUpDateFunction<int32>();
 
-		case MXC::ComparisonType::LessThan:
-			comparisonInnerFunc = []( int32 value, int32 parameter ) { return value < parameter; };
-			break;
-
-		case MXC::ComparisonType::LessThanOrEqualTo:
-			comparisonInnerFunc = []( int32 value, int32 parameter ) { return value <= parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThan:
-			comparisonInnerFunc = []( int32 value, int32 parameter ) { return value > parameter; };
-			break;
-
-		case MXC::ComparisonType::GreaterThanOrEqualTo:
-			comparisonInnerFunc = []( int32 value, int32 parameter ) { return value >= parameter; };
-			break;
-
-		case MXC::ComparisonType::EqualTo:
-		default:
-			comparisonInnerFunc = []( int32 value, int32 parameter ) { return value == parameter; };
-			break;
-		}
-		comparisonFunction_ = [comparisonInnerFunc]( Object^ value, String^ parameter )
-		{
-			auto numberValue = dynamic_cast<IBox<int32>^>( value );
-			int32 numberParameter = parameter ? _wtoi( parameter->Data() ) : 0ll;
-			return numberValue ? comparisonInnerFunc( numberValue->Value, numberParameter ) : DependencyProperty::UnsetValue;
-		};
 		break;
 	}
 	}
